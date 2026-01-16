@@ -1,7 +1,7 @@
 import { UpdateUser } from './UpdateUser';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { User } from '../../domain/entities/User';
-import { UserNotFoundError } from '../../domain/errors';
+import { UserNotFoundError, DuplicateEmailError } from '../../domain/errors';
 import bcrypt from 'bcrypt';
 
 jest.mock('bcrypt');
@@ -83,6 +83,11 @@ describe('UpdateUser Use Case', () => {
     (bcrypt.hash as jest.Mock).mockResolvedValue('newhashedpassword');
     mockRepository.update.mockResolvedValue(updatedUser);
 
+    await updateUser.execute({
+      id: '123',
+      password: 'newpassword',
+    });
+
     expect(bcrypt.hash).toHaveBeenCalledWith('newpassword', 10);
     expect(mockRepository.update).toHaveBeenCalledWith('123', {
       password: 'newhashedpassword',
@@ -123,6 +128,65 @@ describe('UpdateUser Use Case', () => {
 
     expect(mockRepository.update).toHaveBeenCalledWith('123', {
       firstName: 'Jane',
+    });
+  });
+
+  it('should throw error when updating to an email already in use', async () => {
+    const existingUser = new User({
+      id: '123',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      password: 'hashedpassword',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const anotherUser = new User({
+      id: '456',
+      firstName: 'Jane',
+      lastName: 'Smith',
+      email: 'jane@example.com',
+      password: 'hashedpassword',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    mockRepository.findById.mockResolvedValue(existingUser);
+    mockRepository.findByEmail.mockResolvedValue(anotherUser);
+
+    await expect(
+      updateUser.execute({
+        id: '123',
+        email: 'jane@example.com',
+      })
+    ).rejects.toThrow(DuplicateEmailError);
+
+    expect(mockRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('should allow updating email to the same email', async () => {
+    const existingUser = new User({
+      id: '123',
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      password: 'hashedpassword',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    mockRepository.findById.mockResolvedValue(existingUser);
+    mockRepository.update.mockResolvedValue(existingUser);
+
+    await updateUser.execute({
+      id: '123',
+      email: 'john@example.com',
+    });
+
+    expect(mockRepository.findByEmail).not.toHaveBeenCalled();
+    expect(mockRepository.update).toHaveBeenCalledWith('123', {
+      email: 'john@example.com',
     });
   });
 });
