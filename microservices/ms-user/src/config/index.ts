@@ -21,6 +21,7 @@ export const config = {
   jwt: {
     secret: process.env.JWT_SECRET || 'secret',
     internalSecret: process.env.JWT_INTERNAL_SECRET || 'secret',
+    expiration: process.env.JWT_EXPIRATION || '24h',
   },
 
   grpc: {
