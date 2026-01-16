@@ -1,5 +1,7 @@
 import { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify';
 import { LoginUser } from '../../application/use-cases/LoginUser';
+import { config } from '../../config';
+
 
 export class AuthController {
   constructor(
@@ -22,10 +24,13 @@ export class AuthController {
         password: userInput.password,
       });
 
-      const access_token = this.app.jwt.sign({
-        id: user.id,
-        email: user.email,
-      });
+      const access_token = this.app.jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+        },
+        { expiresIn: config.jwt.expiration }
+      );
 
       return reply.code(200).send({
         user: user.toJSON(),

@@ -70,6 +70,10 @@ export class UserController {
       const { id } = request.params as { id: string };
       const { first_name, last_name, email, password } = request.body as any;
 
+      if (id !== request.user.id) {
+        return reply.code(403).send({ error: 'Forbidden: You can only update your own profile' });
+      }
+
       const user = await this.updateUserUseCase.execute({
         id,
         firstName: first_name,
@@ -90,6 +94,10 @@ export class UserController {
   async delete(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { id } = request.params as { id: string };
+
+      if (id !== request.user.id) {
+        return reply.code(403).send({ error: 'Forbidden: You can only delete your own profile' });
+      }
 
       await this.deleteUserUseCase.execute({ id });
       return reply.code(200).send({ message: 'User deleted successfully' });

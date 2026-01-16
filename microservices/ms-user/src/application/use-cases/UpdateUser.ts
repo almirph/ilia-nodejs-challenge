@@ -1,6 +1,6 @@
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { User } from '../../domain/entities/User';
-import { UserNotFoundError } from '../../domain/errors';
+import { UserNotFoundError, DuplicateEmailError } from '../../domain/errors';
 import bcrypt from 'bcrypt';
 
 export interface UpdateUserInput {
@@ -18,6 +18,14 @@ export class UpdateUser {
     const existingUser = await this.userRepository.findById(input.id);
     if (!existingUser) {
       throw new UserNotFoundError();
+    }
+
+    // Validate email if being updated
+    if (input.email && input.email !== existingUser.email) {
+      const emailExists = await this.userRepository.findByEmail(input.email);
+      if (emailExists) {
+        throw new DuplicateEmailError();
+      }
     }
 
     const updateData: any = {};
