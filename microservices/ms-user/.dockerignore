@@ -2,3 +2,9 @@ node_modules
 dist
 .env
 *.log
+**/*.test.ts
+**/*.spec.ts
+jest.config.js
+.git
+.gitignore
+README.md
