@@ -5,3 +5,6 @@ npm-debug.log
 .gitignore
 README.md
 .dockerignore
+**/*.test.ts
+**/*.spec.ts
+jest.config.js
