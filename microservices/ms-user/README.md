@@ -1,71 +1,36 @@
 # User Microservice
 
-Part 2 of the ília Digital Challenge - User management and authentication service.
+This service manages user registration, authentication, and profile management with gRPC server for internal service communication.
 
-## Features
+## Testing Details
 
-- User registration and authentication
-- JWT token generation
-- Internal communication with Wallet microservice
-- PostgreSQL database
-- Docker support
+### Unit Test Coverage
 
-## Tech Stack
+**User Entity Tests:**
+- Valid user creation
+- Email format validation
+- Password hashing on creation
+- Auto-generated UUID and timestamps
 
-- Node.js + TypeScript
-- Fastify
-- Sequelize (PostgreSQL)
-- JWT Authentication
-- Docker
+**CreateUser Use Case Tests:**
+- Successful user registration
+- Duplicate email throws DuplicateEmailError
+- Password is hashed before saving
+- Password not returned in response
 
-## Setup
+**LoginUser Use Case Tests:**
+- Successful login with correct credentials
+- Invalid email throws InvalidCredentialsError
+- Invalid password throws InvalidCredentialsError
+- Password comparison with bcrypt
 
-### Environment Variables
+**UpdateUser Use Case Tests:**
+- Update user profile successfully
+- Email change to duplicate throws DuplicateEmailError
+- Same email update allowed (no error)
+- User not found throws UserNotFoundError
+- Password re-hashed if changed
 
-Copy `.env.example` to `.env` and configure:
-
-```env
-PORT=3002
-DB_HOST=localhost
-DB_PORT=5433
-DB_USER=user_user
-DB_PASSWORD=user_pass
-DB_NAME=user_db
-JWT_SECRET=secret
-JWT_INTERNAL_SECRET=secret
-```
-
-### Run with Docker
-
-From the root directory:
-
-```bash
-docker-compose up user-postgres user-app
-```
-
-### Run Locally
-
-```bash
-npm install
-npm run dev
-```
-
-## API Endpoints
-
-- `POST /register` - Register new user
-- `POST /login` - Authenticate user
-- `GET /me` - Get current user info (requires JWT)
-- `GET /health` - Health check
-
-## Architecture
-
-```
-src/
-├── application/         # Use cases (business logic)
-├── domain/             # Entities and repository interfaces
-├── infrastructure/     # External implementations
-│   ├── api/           # HTTP (controllers, routes, middleware)
-│   ├── database/      # Database models and repositories
-│   └── grpc/          # gRPC client for wallet service
-└── server.ts          # Application entry point
-```
+**DeleteUser Use Case Tests:**
+- Successful user deletion
+- User not found throws UserNotFoundError
